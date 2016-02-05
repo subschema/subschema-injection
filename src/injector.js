@@ -1,4 +1,5 @@
 "use strict";
+import {Component} from 'react';
 
 function keyIn(key, ...args) {
     for (let i = 0; i < args.length; i++) {
@@ -24,7 +25,11 @@ function uniqueKeys(...args) {
 
 const resolvers = [];
 
+class WrapComponent extends Component {
+
+}
 const Loader = {
+    WrapComponent,
     keyIn,
     resolver(propType, resolve){
         if (propType == null || resolve == null) {

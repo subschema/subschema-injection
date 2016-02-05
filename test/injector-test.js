@@ -7,6 +7,7 @@ import support, {intoWithContext, byComponent} from 'subschema-test-support/src/
 import resolvers from '../src/resolvers';
 
 
+
 function twoUnique(fn1, fn2) {
     if (fn1 === fn2) return fn1;
     if (!fn2) return fn1;
@@ -65,5 +66,7 @@ describe("injection", function () {
         expect(vtc.props.expr).toBe('d abc');
 
         expect(Object.keys(vtc.props).length).toBe(5);
+        valueManager.update('test', 'huh')
+        expect(vtc.props.expr).toBe('d huh');
     });
 });

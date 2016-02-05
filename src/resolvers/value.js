@@ -13,7 +13,7 @@ export default function valueEvent(Clazz, props, key, value) {
         };
 
         listeners = [];
-        state = {};
+        state = {[key]: value};
 
         componentWillMount() {
             this.listeners.push(this.context.valueManager.addListener(this.props[key] || value, (v)=> {

@@ -13,14 +13,13 @@ export default function template(Clazz, props, key, value) {
         templates = {};
 
 
-        constructor(props, context, ...rest) {
-            super(props, context, ...rest);
-            this.templates[key] = context.loadTemplate(this.props[key]) || value;
+        componentWillMount() {
+            this.templates[key] = this.context.loadTemplate(this.props[key]) || value;
         }
 
-        componentWillReceiveProps(newProps) {
+        componentWillReceiveProps(newProps, context) {
             if (this.props[key] !== newProps[key]) {
-                this.templates[key] = this.context.loadTemplate(this.props[key]) || value;
+                this.templates[key] = context.loadTemplate(this.props[key]) || value;
             }
         }
 

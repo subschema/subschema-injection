@@ -2,6 +2,7 @@
 
 import React, {Component} from 'react';
 import {PropTypes, tutils} from 'subschema';
+import {extendPrototype} from '../util';
 
 const {toArray, FREEZE_OBJ}=tutils;
 
@@ -14,40 +15,33 @@ function initValidators(nval) {
     }
     return this.loadValidator(nval.type)(nval);
 }
+function toValidators(val, loader) {
+    return toArray(val).map(initValidators, loader)
+}
 
 export default function validate(Clazz, props, key, value) {
 
-    class ValidateWrap extends Component {
-        static contextTypes = PropTypes.contextTypes;
-        static defaultProps = {[key]: value};
-        inject = {};
+    Clazz.contextTypes.loader = PropTypes.loader;
 
-        componentWillMount() {
-            //this injects the options.
-            this.validators = toArray(this.props[key]).map(initValidators, this.context.loader);
+    extendPrototype(Clazz, 'componentWillMount', function validate$willMount() {
+        this.injected[key] = makeValidate(toValidators(this.props[key], this.context.loader));
+    });
+
+    extendPrototype(Clazz, ' componentWillReceiveProps', function validate$receiveProps(newProps, context) {
+        if (this.props[key] != newProps[key]) {
+            this.injected[key] = makeValidate(toValidators(newProps[key], context.loader));
         }
+    });
 
-        componentWillReceiveProps(newProps) {
-            if (this.props[key] != newProps[key]) {
-                this.validators = toArray(newProps[key]).map(initValidators, this.context.loader);
-            }
-        }
-
-        validate = (value)=> {
-            const length = this.validators.length;
+    function makeValidate(validators) {
+        return (value)=> {
+            const length = validators.length;
             for (let i = 0; i < length; i++) {
-                var error = this.validators[i](value);
+                var error = validators[i](value);
                 if (error !== null) {
                     return error;
                 }
             }
         };
-
-        render() {
-            const inject = {[key]: this.validate}
-            return <Clazz {...this.props} {...inject}/>
-        }
     }
-
-    return ValidateWrap;
 }

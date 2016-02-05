@@ -2,31 +2,19 @@
 
 import React, {Component} from 'react';
 import {PropTypes} from 'subschema';
+import {extendPrototype} from '../util';
 
 export default function template(Clazz, props, key, value) {
 
-    class TemplateWrap extends Component {
+    Clazz.contextTypes.loader = PropTypes.loader;
 
-        static contextTypes = {
-            loader: PropTypes.loader
-        };
-        templates = {};
+    extendPrototype(Clazz, 'componentWillMount', function template$willMount() {
+        this.injected[key] = this.context.loadTemplate(this.props[key]) || value;
+    });
 
-
-        componentWillMount() {
-            this.templates[key] = this.context.loadTemplate(this.props[key]) || value;
+    extendPrototype(Clazz, 'componentWillReceiveProps', function template$willRecieveProps(newProps, context) {
+        if (this.props[key] !== newProps[key]) {
+            this.injected[key] = context.loadTemplate(this.props[key]) || value;
         }
-
-        componentWillReceiveProps(newProps, context) {
-            if (this.props[key] !== newProps[key]) {
-                this.templates[key] = context.loadTemplate(this.props[key]) || value;
-            }
-        }
-
-        render() {
-            return <Clazz {...this.props} {...this.templates}/>
-        }
-
-    }
-    return TemplateWrap;
+    });
 };

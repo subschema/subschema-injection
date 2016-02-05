@@ -2,33 +2,30 @@
 
 import React, {Component} from 'react';
 import {PropTypes} from 'subschema';
+import {extendPrototype, clearListeners, removeListeners} from '../util';
 
 
 export default function valueEvent(Clazz, props, key, value) {
+    Clazz.contextTypes.valueManager = PropTypes.valueManager;
 
-    class ValueWrap extends Component {
-
-        static contextTypes = {
-            valueManager: PropTypes.valueManager
-        };
-
-        listeners = [];
-        state = {[key]: value};
-
-        componentWillMount() {
-            this.listeners.push(this.context.valueManager.addListener(this.props[key] || value, (v)=> {
-                this.setState({[key]: v});
-            }, null, true).remove);
-        }
-
-        componentWillUnmount() {
-            this.listeners.remove.forEach(v=>v());
-        }
-
-        render() {
-            return <Clazz {...this.props} {...this.state}/>
-        }
-
+    function handleListeners(scope, props, context) {
+        const listeners = removeListeners(scope.listeners) || (scope.listeners = []);
+        listeners.push(context.valueManager.addListener(props[key], (v)=> {
+            scope.injected[key] = v;
+            scope.forceUpdate();
+        }, null, true).remove);
+        return listeners;
     }
-    return ValueWrap;
+
+    extendPrototype(Clazz, 'componentWillMount', function valueEvent$willMount() {
+        handleListeners(this, this.props, this.context);
+    });
+
+    extendPrototype(Clazz, 'componentWillReceiveProps', function valueEvent$receiveProps(newProps, context) {
+        if (this.props[key] !== newProps[key]) {
+            handleListeners(this, this.props, this.context);
+        }
+    });
+
+    extendPrototype(Clazz, 'componentWillUnmount', clearListeners);
 }

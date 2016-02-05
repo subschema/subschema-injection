@@ -1,4 +1,5 @@
 var webpack = require('./webpack.config.js'), path = require('path'), join = path.join.bind(path, __dirname);
+webpack.isKarma = true;
 
 module.exports = function (config) {
     config.set({
@@ -21,6 +22,10 @@ module.exports = function (config) {
         webpackMiddleware: {
             stats: {
                 colors: true
+            },
+            devServer: {
+                hot: true,
+                inline: true
             }
         }
     });

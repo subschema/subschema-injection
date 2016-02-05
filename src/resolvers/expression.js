@@ -1,50 +1,58 @@
 "use strict";
 
-import React, {Component} from 'react';
-import {PropTypes, tutils, types} from 'subschema';
+import {PropTypes, types} from 'subschema';
+import {extendPrototype, removeListeners, clearListeners} from '../util';
 
 const {SubstituteMixin} = types;
 
-const push = Function.apply.bind(Array.prototype.push);
 
 export default function expression(Clazz, props, key, value) {
 
-    class ExpressionWrap extends Component {
-        static contextTypes = {valueManager: PropTypes.valueManager};
-        static defaultProps = {[key]: value};
-        state = {};
-        listeners = [];
+    Clazz.contextTypes.valueManager = PropTypes.valueManager;
 
-        componentWillMount() {
-            this.setupExpression(this.props[key]);
-        }
-
-        setupExpression(propVal) {
-            const vm = this.context.valueManager;
-            const expr = this._expressions = SubstituteMixin(propVal);
-
-            push(this.listeners, expr.listen.map((v)=> vm.addListener(v, (val)=> {
-                this.setState({[v]: val})
-            }, null, true).remove));
-
-        }
-
-        componentWillReceiveProps(newProps) {
-            if (this.props[key] !== newProps[key]) {
-                this.setupExpression(newProps[key]);
+    function setupExpression(scope, propVal, context) {
+        const expressionVals = {};
+        const listeners = scope.expressionListeners ? removeListeners(scope.expressionListeners) : (scope.expressionListeners = []);
+        const vm = context.valueManager;
+        const expr = SubstituteMixin(propVal);
+        expr.listen.forEach(v=> {
+            if (!(v in expressionVals)) {
+                //only need to listen to a value once.
+                expressionVals[v] = null;
+                const listener = vm.addListener(v, function (val) {
+                    if (expressionVals[v] !== val) {
+                        //if the values don't cange the state don't change.
+                        expressionVals[v] = val;
+                        scope.setState({[key]: expr.format(expressionVals)});
+                    }
+                }, null, true).remove;
+                listeners.push(()=> {
+                    console.log('remove called');
+                    listener();
+                });
             }
-        }
+        });
 
-        componentWillUnmount() {
-            this.listeners.forEach(v=>v());
-        }
-
-        render() {
-            var inject = {[key]: this._expressions.format(this.state)}
-            return <Clazz {...this.props} {...inject}/>
-        }
-
+        console.log('listening to ', listeners.length);
     }
 
-    return ExpressionWrap;
+    extendPrototype(Clazz, 'componentWillMount', function expression$willMount() {
+        setupExpression(this, this.props[key], this.context);
+        console.log('expression$componentWillMount', this.expressionListeners.length)
+    });
+
+
+    extendPrototype(Clazz, 'componentWillReceiveProps', function expression$willReceiveProps(newProps, context) {
+        if (this.props[key] !== newProps[key]) {
+            setupExpression(this, newProps[key], context);
+            console.log('expression$componentWillReceiveProps', this.expressionListeners.length)
+        }
+    });
+
+    extendPrototype(Clazz, 'componentWillUnmount', function () {
+        console.log('expression$componentWillUnmount')
+        removeListeners(this.expressionListeners);
+
+    });
+
 }

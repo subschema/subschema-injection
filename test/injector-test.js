@@ -3,7 +3,7 @@ import expect from 'expect';
 import React, {Component} from 'react';
 import {PropTypes, decorators, ValueManager} from 'subschema';
 import injector from '../src/injector';
-import support, {intoWithContext, byComponent} from 'subschema-test-support/src/index.js';
+import support, {intoWithContext, byComponent,findNode} from 'subschema-test-support/src/index.js';
 import resolvers from '../src/resolvers';
 
 
@@ -18,7 +18,7 @@ function twoUnique(fn1, fn2) {
     }
 }
 describe("injection", function () {
-
+    this.timeout(50000);
     class ValueTestClass extends Component {
         static propTypes = {
             stuff: PropTypes.string,
@@ -68,5 +68,8 @@ describe("injection", function () {
         expect(Object.keys(vtc.props).length).toBe(5);
         valueManager.update('test', 'huh')
         expect(vtc.props.expr).toBe('d huh');
+
+        const node  = findNode(vtc);
+        expect(node.innerText).toBe('abc d');
     });
 });

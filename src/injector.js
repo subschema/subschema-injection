@@ -1,5 +1,5 @@
 "use strict";
-import {Component} from 'react';
+import React, {Component} from 'react';
 
 function keyIn(key, ...args) {
     for (let i = 0; i < args.length; i++) {
@@ -25,11 +25,8 @@ function uniqueKeys(...args) {
 
 const resolvers = [];
 
-class WrapComponent extends Component {
 
-}
 const Loader = {
-    WrapComponent,
     keyIn,
     resolver(propType, resolve){
         if (propType == null || resolve == null) {
@@ -53,18 +50,28 @@ const Loader = {
     inject(Clazz, extraPropTypes, extraProps){
         const {defaultProps, propTypes} = Clazz;
         const propTypeKeys = uniqueKeys(propTypes, extraPropTypes);
+        class InjectedClass extends Component {
+            static defaultProps = {};
+            static contextTypes = {};
+            state = {};
+            injected = {};
+
+            render() {
+                return <Clazz {...this.props} {...this.injected} {...this.state}/>
+            }
+        }
         propTypeKeys.reduce((ret, key)=> {
             if (!(key in ret)) {
                 const propType = keyIn(key, extraPropTypes, propTypes);
-                const propValue = keyIn(key, extraProps, defaultProps)
-                const Clz = this.resolveProp(Clazz, ret, propType, key, propValue);
-                if (Clz != null) {
-                    Clazz = Clz;
+                const propValue = keyIn(key, extraProps);
+                if (defaultProps) {
+                    InjectedClass.defaultProps[key] = defaultProps[key];
                 }
+                this.resolveProp(InjectedClass, ret, propType, key, propValue);
             }
             return ret;
         }, {});
-        return Clazz;
+        return InjectedClass;
     }
 };
 

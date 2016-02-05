@@ -2,6 +2,7 @@
 
 import React, {Component} from 'react';
 import {PropTypes, tutils} from 'subschema';
+import {extendPrototype} from '../util';
 
 const {toArray}=tutils;
 function toOptions(nval) {
@@ -21,27 +22,19 @@ function toOptions(nval) {
     return rest;
 }
 
+function asOptions(val) {
+    return toArray(val).map(toOptions);
+}
 export default function options(Clazz, props, key, value) {
 
-    class OptionWrap extends Component {
-        static defaultProps = {[key]: value};
-        inject = {};
+    extendPrototype(Clazz, 'componentWillMount', function options$componentWillMount() {
+        //this injects the options.
+        this.injected[key] = asOptions(this.props[key]);
+    });
 
-        componentWillMount() {
-            //this injects the options.
-            this.inject[key] = toArray(this.props[key]).map(toOptions);
+    extendPrototype(Clazz, 'componentWillReceiveProps', function options$willReceiveProps(newProps) {
+        if (this.props[key] !== newProps[key]) {
+            this.injected[key] = asOptions(newProps[key]);
         }
-
-        componentWillReceiveProps(newProps) {
-            if (this.props[value] != this.props.value) {
-                this.inject[key] = toArray(this.props[key]).map(toOptions);
-            }
-        }
-
-        render() {
-            return <Clazz {...this.props} {...this.inject}/>
-        }
-    }
-
-    return OptionWrap;
+    });
 }

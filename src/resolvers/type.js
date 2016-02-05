@@ -3,32 +3,28 @@
 import React, {Component} from 'react';
 import {PropTypes} from 'subschema';
 import injector from '../injector';
+import {extendPrototype} from '../util';
 
 const {loader} = PropTypes;
 
+
 export default function type(Clazz, props, key, value) {
-    class TypeWrap extends Component {
-        static contextTypes = {loader};
-        static defaultProps = {[key]: value};
-        inject = {};
 
-        resolve(key) {
-            return injector.inject(this.context.loader.loadType(this.props[key]));
-        }
 
-        componentWillMount() {
-            this.inject[key] = this.resolve(key);
-        }
+    Clazz.contextTypes.loader = loader;
 
-        componentWillReceiveProps(newProps) {
-            if (this.props[key] !== newProps[key]) {
-                this.inject[key] = this.resolve(key);
-            }
-        }
-
-        render() {
-            return <Clazz {...this.props} {...this.inject}/>
-        }
+    function resolve(val, context) {
+        return injector.inject(context.loader.loadType(val));
     }
-    return TypeWrap;
+
+
+    extendPrototype(Clazz, 'componentWillMount', function type$willMount() {
+        this.injected[key] = resolve(this.props[key], this.context);
+    });
+
+    extendPrototype(Clazz, 'componentWillReceiveProps', function (newProps, context) {
+        if (this.props[key] !== newProps[key]) {
+            this.injected[key] = resolve(key, context);
+        }
+    });
 }

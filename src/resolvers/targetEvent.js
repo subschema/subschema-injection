@@ -2,29 +2,20 @@
 
 import React, {Component} from 'react';
 import {PropTypes} from 'subschema';
+import {extendPrototype} from '../util';
 
 export default function targetEvent(Clazz, props, key, value) {
 
-    return class TargetEventWrap extends Component {
+    Clazz.contextTypes.valueManager = PropTypes.valueManager;
 
-        static contextTypes = {
-            valueManager: PropTypes.valueManager
-        };
-        inject = {};
+    extendPrototype(Clazz, 'componentWillMount', function targetEvent$willMount() {
+        this.injected[key] = (e) => this.context.valueManager.update(this.props[value], e.target.value);
+    });
 
-        componentWillMount() {
-            this.inject[key] = (e) => this.context.valueManager.update(this.props[value], e.target.value);
+    extendPrototype(Clazz, 'componentWillReceiveProps', function targetEvent$willRecieveProps(newProps) {
+        if (this.props[key] !== newProps[key]) {
+            this.injected[key] = (e) => this.context.valueManager.update(newProps[key], e.target.value);
         }
+    });
 
-        componentWillReceiveProps(newProps) {
-            if (this.props[value] !== newProps[value]) {
-                this.inject[key] = (e) => this.context.valueManager.update(newProps[value], e.target.value);
-            }
-        }
-
-        render() {
-            return <Clazz {...this.props} {...this.inject}/>
-        }
-
-    };
 }

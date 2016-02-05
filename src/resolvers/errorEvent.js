@@ -2,33 +2,19 @@
 
 import React, {Component} from 'react';
 import {PropTypes} from 'subschema';
-
+import {extendPrototype} from '../util';
 export default function errorEvent(Clazz, props, key, value) {
 
-    return class ErrorEventWrap extends Component {
-        static defaultProps = {[key]: value};
-        static contextTypes = {
-            valueManager: PropTypes.valueManager
-        };
+    Clazz.contextTypes.valueManager = PropTypes.valueManager;
 
-        componentWillMount() {
-            this.rest = {
-                [key]: (val)=> this.context.valueManager.updateErrors(this.props[value], val)
+    extendPrototype(Clazz, 'componentWillMount', function () {
+        this.injected[key] = (val)=> this.context.valueManager.updateErrors(this.props[value], val);
 
-            };
+    });
+
+    extendPrototype(Clazz, 'componentWillReceiveProps', function (newProps, context) {
+        if (this.props[key] !== newProps[key]) {
+            this.injected[key] = (val)=> context.valueManager.updateErrors(newProps[value], val);
         }
-
-        componentWillReceiveProps(newProps) {
-            if (this.props[key] != this.props[key]) {
-                this.rest = {
-                    [key]: (val)=> this.context.valueManager.updateErrors(this.props[value], val)
-                };
-            }
-        }
-
-        render() {
-            return <Clazz {...this.props} {...this.rest}/>
-        }
-
-    };
+    });
 }

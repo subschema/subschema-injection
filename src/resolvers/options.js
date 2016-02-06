@@ -25,7 +25,7 @@ function toOptions(nval) {
 function asOptions(val) {
     return toArray(val).map(toOptions);
 }
-export default function options(Clazz, props, key, value) {
+export default function options(Clazz, key) {
 
     extendPrototype(Clazz, 'componentWillMount', function options$componentWillMount() {
         //this injects the options.

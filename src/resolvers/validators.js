@@ -19,29 +19,32 @@ function toValidators(val, loader) {
     return toArray(val).map(initValidators, loader)
 }
 
-export default function validate(Clazz, props, key, value) {
+function makeValidate(validators, context) {
+    validators = toValidators(validators, context.loader);
+    return (value)=> {
+        const length = validators.length;
+        for (let i = 0; i < length; i++) {
+            var error = validators[i](value);
+            if (error !== null) {
+                return error;
+            }
+        }
+    };
+}
+
+export default function validate(Clazz, key) {
 
     Clazz.contextTypes.loader = PropTypes.loader;
 
     extendPrototype(Clazz, 'componentWillMount', function validate$willMount() {
-        this.injected[key] = makeValidate(toValidators(this.props[key], this.context.loader));
+        this.injected[key] = makeValidate(this.props[key], this.context);
     });
 
     extendPrototype(Clazz, ' componentWillReceiveProps', function validate$receiveProps(newProps, context) {
         if (this.props[key] != newProps[key]) {
-            this.injected[key] = makeValidate(toValidators(newProps[key], context.loader));
+            this.injected[key] = makeValidate(newProps[key], context);
         }
     });
 
-    function makeValidate(validators) {
-        return (value)=> {
-            const length = validators.length;
-            for (let i = 0; i < length; i++) {
-                var error = validators[i](value);
-                if (error !== null) {
-                    return error;
-                }
-            }
-        };
-    }
+
 }

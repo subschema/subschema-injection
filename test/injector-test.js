@@ -2,21 +2,12 @@
 import expect from 'expect';
 import React, {Component} from 'react';
 import {PropTypes, decorators, ValueManager} from 'subschema';
-import injector from '../src/injector';
 import support, {intoWithContext, byComponent,findNode} from 'subschema-test-support/src/index.js';
 import resolvers from '../src/resolvers';
+import injectorFactory from '../src/injectorFactory';
 
+const injector = injectorFactory();
 
-
-function twoUnique(fn1, fn2) {
-    if (fn1 === fn2) return fn1;
-    if (!fn2) return fn1;
-    if (!fn1) return fn2;
-    return function twoUnique$both(...args) {
-        fn1.apply(this, args);
-        fn2.apply(this, args);
-    }
-}
 describe("injection", function () {
     this.timeout(50000);
     class ValueTestClass extends Component {
@@ -38,20 +29,16 @@ describe("injection", function () {
             return <span>{this.props.value} {this.props.other}</span>
         }
     }
-    Object.keys(resolvers).map((k)=>injector.resolver(PropTypes[k], resolvers[k]));
-
-    it('should return first key', function () {
-        expect(injector.keyIn('stuff', {stuff: 1}, {stuff: null})).toBe(1);
-        expect(injector.keyIn('stuff', {}, {stuff: 1})).toBe(1);
-        expect(injector.keyIn('stuff', null, {stuff: 1})).toBe(1);
-
+    Object.keys(resolvers).map(function (k) {
+        injector.resolver(PropTypes[k], resolvers[k])
     });
 
     it('should resolve propTypes', function () {
 
         const Injected = injector.inject(ValueTestClass);
         const valueManager = ValueManager({'test': 'abc', more: 'd'});
-        const inst = intoWithContext(<Injected value="test" other="more" stuff="what" options="a,b,c" expr="{more} {test}"/>, {
+        const inst = intoWithContext(<Injected value="test" other="more" stuff="what" options="a,b,c"
+                                               expr="{more} {test}"/>, {
             valueManager
         }, true);
 
@@ -69,7 +56,7 @@ describe("injection", function () {
         valueManager.update('test', 'huh')
         expect(vtc.props.expr).toBe('d huh');
 
-        const node  = findNode(vtc);
+        const node = findNode(vtc);
         expect(node.innerText).toBe('abc d');
     });
 });

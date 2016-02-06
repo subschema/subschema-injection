@@ -78,7 +78,12 @@ function resolveKey(path, key) {
     }
     return parts.length === 0 ? null : parts.join('.');
 }
-
+function extend(name, fn) {
+    this.prototype[name] = typeof value === 'function' ? applyNice(fn, this.prototype[name]) : fn;
+}
+function extendStatic(name, value) {
+    this[name] = value;
+}
 function removeListeners(listeners) {
     if (listeners) {
         listeners.forEach(execArg);
@@ -91,4 +96,4 @@ function clearListeners() {
         return removeListeners(this.listeners);
     }
 }
-export  {applyNice, extendPrototype, onlyKeys, keyIn, uniqueKeys, resolveKey, execArg, push, removeListeners, clearListeners}
+export  {applyNice, extend, extendStatic, extendPrototype, onlyKeys, keyIn, uniqueKeys, resolveKey, execArg, push, removeListeners, clearListeners}

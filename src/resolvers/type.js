@@ -8,20 +8,16 @@ import {injector} from '../PropTypes';
 
 const propTypes = {
     onChange: PropTypes.targetEvent,
-    dataType: PropTypes.dataType,
     value: PropTypes.value,
-    path: PropTypes.path
+    id: PropTypes.id,
+    name: PropTypes.name
 };
 
-const defaultProps = {
-    dataType: 'text'
-};
 
 function resolve(val, context) {
     const {type, ...rest} = typeof val === 'string' ? {type: val} : val;
-    const def = defaults(rest, defaultProps);
     const Type = context.loader.loadType(type);
-    return context.injector.inject(Type, propTypes, def);
+    return context.injector.inject(Type, propTypes, rest);
 }
 
 export default function type(Clazz, key) {

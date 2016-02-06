@@ -2,7 +2,7 @@
 import expect from 'expect';
 import React, {Component} from 'react';
 import {PropTypes, decorators, ValueManager} from 'subschema';
-import support, {intoWithContext, byComponent,findNode, change} from 'subschema-test-support/src/index.js';
+import support, {intoWithContext, byComponent,findNode, change} from '../support';
 import resolvers from '../../src/resolvers';
 import injectorFactory from '../../src/injectorFactory';
 const injector = injectorFactory();

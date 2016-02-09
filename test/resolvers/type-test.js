@@ -9,7 +9,7 @@ import {injector as injectorPropType} from '../../src/PropTypes';
 
 const injector = injectorFactory();
 
-describe('type', function () {
+describe('resolvers/type', function () {
 
     class TestStuff extends Component {
         static propTypes = {

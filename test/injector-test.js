@@ -2,7 +2,7 @@
 import expect from 'expect';
 import React, {Component} from 'react';
 import {PropTypes, decorators, ValueManager} from 'subschema';
-import support, {intoWithContext, byComponent,findNode} from 'subschema-test-support/src/index.js';
+import support, {intoWithContext, byComponent,findNode} from './support';
 import resolvers from '../src/resolvers';
 import injectorFactory from '../src/injectorFactory';
 
@@ -10,6 +10,13 @@ const injector = injectorFactory();
 
 describe("injection", function () {
     this.timeout(50000);
+    Object.keys(resolvers).map(function (k) {
+        if (PropTypes[k] && resolvers[k]) {
+            injector.resolver(PropTypes[k], resolvers[k])
+        }else{
+            console.log('missing ', k, PropTypes[k], resolvers[k]);
+        }
+    });
     class ValueTestClass extends Component {
         static propTypes = {
             stuff: PropTypes.string,
@@ -29,9 +36,7 @@ describe("injection", function () {
             return <span>{this.props.value} {this.props.other}</span>
         }
     }
-    Object.keys(resolvers).map(function (k) {
-        injector.resolver(PropTypes[k], resolvers[k])
-    });
+
 
     it('should resolve propTypes', function () {
 
@@ -52,10 +57,7 @@ describe("injection", function () {
         expect(vtc.props.options[1].label).toBe('b');
         expect(vtc.props.expr).toBe('d abc');
 
-        expect(Object.keys(vtc.props).length).toBe(5);
-        valueManager.update('test', 'huh')
-        expect(vtc.props.expr).toBe('d huh');
-
+        expect(Object.keys(vtc.props).length).toBe(6);
         const node = findNode(vtc);
         expect(node.innerText).toBe('abc d');
     });

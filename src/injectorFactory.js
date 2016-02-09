@@ -9,13 +9,13 @@ export class BaseInjectComponent extends Component {
 
 export default function injector(resolvers = []) {
 
-    function resolveProp(Clazz, propType, key, propTypeKeys) {
+    function resolveProp(injectedClass, propType, key, propTypeKeys, Clazz) {
         const length = resolvers.length;
         for (let i = 0; i < length; i++) {
             const resolver = resolvers[i], pT = resolver.propType;
 
             if (pT === propType || pT.isRequired === propType) {
-                return resolver.resolve(Clazz, key, propTypeKeys);
+                return resolver.resolve(injectedClass, key, propTypeKeys, Clazz);
             }
         }
         return null;
@@ -39,10 +39,10 @@ export default function injector(resolvers = []) {
             const [...copyPropTypeKeys] = propTypeKeys;
             const render = strictProps !== false ? function render() {
                 const props = onlyKeys(copyPropTypeKeys, this.injected, this.props);
-                return <Clazz {...props} />
+                return <Clazz {...props} >{this.props.children}</Clazz>
 
             } : function loosePropsRender() {
-                return <Clazz {...this.props} {...this.injected }/>
+                return <Clazz {...this.props} {...this.injected }>{this.props.children}</Clazz>
 
             };
             //BaseInjectComponent is just a marker class.
@@ -51,6 +51,9 @@ export default function injector(resolvers = []) {
                 static contextTypes = {};
                 render = render;
             }
+            if ('template' in Clazz){
+                InjectedClass.template = Clazz.template;
+            }
 
             return propTypeKeys.reduce((injectedClass, key)=> {
 
@@ -58,7 +61,7 @@ export default function injector(resolvers = []) {
 
                 injectedClass.defaultProps[key] = keyIn(key, extraProps, defaultProps);
 
-                const nextClass = resolveProp(injectedClass, propType, key, copyPropTypeKeys);
+                const nextClass = resolveProp(injectedClass, propType, key, copyPropTypeKeys, Clazz);
 
                 return (nextClass == null) ? injectedClass : nextClass;
 

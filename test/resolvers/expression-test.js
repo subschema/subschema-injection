@@ -7,7 +7,7 @@ import resolvers from '../../src/resolvers';
 import injectorFactory from '../../src/injectorFactory';
 const injector = injectorFactory();
 
-describe('expression', function () {
+describe('resolvers/expression', function () {
 
     class ExpressionTest extends Component {
         static propTypes = {
@@ -24,7 +24,7 @@ describe('expression', function () {
     injector.resolver(PropTypes.expression, resolvers.expression);
     it('should evaluate expression', function () {
         const Injected = injector.inject(ExpressionTest, {path: PropTypes.path});
-        const valueManager = ValueManager({'other': 'stuff', more: 'd'});
+        const valueManager = ValueManager({'other': 'stuff', hello: {more: '', test: ''}});
         const inst = intoWithContext(<Injected path="hello"
                                                expr="hi {other}"
                                                expr1="{.more} {.test}."/>, {
@@ -42,7 +42,10 @@ describe('expression', function () {
 
         valueManager.update('hello.test', 'cool');
         expect(et.props.expr1).toBe('I am cool.');
-
+        expect(et.props.expr).toBe('hi stuff');
+        valueManager.update('other', 'huh');
+        expect(et.props.expr).toBe('hi huh');
+        expect(et.props.expr1).toBe('I am cool.');
     });
 
 });

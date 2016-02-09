@@ -30,7 +30,7 @@ var config = {
             'subschema-styles': join('node_modules/subschema/src/styles'),
 
 
-            'subschema-injection': isTestDist ? join('dist/index.js') : join('src/index.js')
+            'subschema-injection': isTestDist ? join('dist/index.js') : join('src')
         }
     },
     stats: {

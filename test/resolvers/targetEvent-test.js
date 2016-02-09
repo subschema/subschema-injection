@@ -11,7 +11,7 @@ injector.resolver(PropTypes.targetEvent, resolvers.targetEvent);
 injector.resolver(PropTypes.value, resolvers.value);
 injector.resolver(PropTypes.dataType, resolvers.dataType);
 
-describe('targetEvent', function () {
+describe('resolvers/targetEvent', function () {
     this.timeout(10000);
     const propTypes = {
         onChange: PropTypes.targetEvent,

@@ -5,8 +5,8 @@ function applyNice(f1, f2) {
     if (f1 === f2 || !f2) return f1;
     if (!f1) return f2;
     return function applyNice$return(...args) {
-        f1.apply(this, args);
-        f2.apply(this, args);
+        this::f1(...args);
+        this::f2(...args);
     };
 }
 
@@ -79,7 +79,44 @@ function resolveKey(path, key) {
     return parts.length === 0 ? null : parts.join('.');
 }
 function extend(name, fn) {
-    this.prototype[name] = typeof value === 'function' ? applyNice(fn, this.prototype[name]) : fn;
+    const fn2 = this.prototype[name];
+    this.prototype[name] = applyNice(fn, fn2);
+}
+function listener(key, fn) {
+    function listener$listen(props, context) {
+
+        if (!this._listeners) {
+            this._listeners = {};
+        } else if (this._listeners[key]) {
+            this._listeners[key]();
+        }
+        this._listeners[key] = this::fn(props[key], key, props, context);
+    }
+
+    this::extend('componentWillMount', function listener$willMount() {
+        this::listener$listen(this.props, this.context);
+    });
+    this::extend('componentWillReceiveProps', listener$listen);
+
+    this::unmount(function () {
+        this._listeners && this._listeners[key] && this._listeners[key]();
+    });
+
+}
+function prop(key, fn) {
+    //this is class scope.
+    this::extend('componentWillMount', function util$prop$willMount() {
+        //this is instance scope.
+        this.injected[key] = this::fn(this.props[key], key, this.props, this.context);
+    });
+
+    this::extend('componentWillReceiveProps', function util$prop$receiveProps(props, context) {
+        if (props[key] !== this.props[key]) {
+            this.injected[key] = this::fn(props[key], key, props, context);
+        }
+    });
+
+    return this;
 }
 function extendStatic(name, value) {
     this[name] = value;
@@ -96,4 +133,8 @@ function clearListeners() {
         return removeListeners(this.listeners);
     }
 }
-export  {applyNice, extend, extendStatic, extendPrototype, onlyKeys, keyIn, uniqueKeys, resolveKey, execArg, push, removeListeners, clearListeners}
+function unmount(fn) {
+    this.prototype.componentWillUnmount = applyNice(fn, this.prototype.componentWillUnmount);
+}
+
+export  {applyNice,listener, extend, prop, unmount, extendStatic, extendPrototype, onlyKeys, keyIn, uniqueKeys, resolveKey, execArg, push, removeListeners, clearListeners}

@@ -1,50 +1,41 @@
 "use strict";
 
 import {PropTypes, types} from 'subschema';
-import {extendPrototype, removeListeners, resolveKey, clearListeners} from '../util';
+import {listener, resolveKey,applyNice} from '../util';
 
 const {SubstituteMixin} = types;
 
-function setupExpression(scope, propVal, context, key) {
+function handleExpression(value, key, props, context) {
+    const scope = this;
     const expressionVals = {};
-    const listeners = scope.expressionListeners ? removeListeners(scope.expressionListeners) : (scope.expressionListeners = []);
-    const vm = context.valueManager;
-    const expr = SubstituteMixin(propVal);
-    expr.listen.forEach(v=> {
+    const {valueManager} = context;
+    const {listen, format} = SubstituteMixin(value);
+    const {injected} = this;
+    const {path} = props;
+    const ret = listen.reduce((fn, v)=> {
         if (!(v in expressionVals)) {
             //only need to listen to a value once.
-            expressionVals[v] = '';
-            const listener = vm.addListener(resolveKey(scope.props.path, v), function (val) {
-                if (expressionVals[v] !== val) {
+            const resolvedKey = resolveKey(path, v);
+            return applyNice(valueManager.addListener(resolvedKey, function (val) {
+                if (!(v in expressionVals) || expressionVals[v] !== val) {
                     //if the values don't cange the state don't change.
-                    expressionVals[v] = val;
-                    scope.injected[key] = expr.format(expressionVals);
+                    expressionVals[v] = val == null ? '' : val;
+                    injected[key] = format(expressionVals);
                     scope.forceUpdate();
                 }
-            }, null, true).remove;
-            listeners.push(listener);
+            }, null, true).remove, fn);
+
         }
-    });
+        return fn;
+    }, null);
+    return ret;
 }
 
 export default function expression(Clazz, key) {
 
     Clazz.contextTypes.valueManager = PropTypes.valueManager;
 
+    Clazz::listener(key, handleExpression);
 
-    extendPrototype(Clazz, 'componentWillMount', function expression$willMount() {
-        setupExpression(this, this.props[key], this.context, key);
-    });
-
-
-    extendPrototype(Clazz, 'componentWillReceiveProps', function expression$willReceiveProps(newProps, context) {
-        if (this.props[key] !== newProps[key]) {
-            setupExpression(this, newProps[key], context, key);
-        }
-    });
-
-    extendPrototype(Clazz, 'componentWillUnmount', function () {
-        removeListeners(this.expressionListeners);
-    });
 
 }

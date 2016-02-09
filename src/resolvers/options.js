@@ -2,7 +2,7 @@
 
 import React, {Component} from 'react';
 import {PropTypes, tutils} from 'subschema';
-import {extendPrototype} from '../util';
+import {prop} from '../util';
 
 const {toArray}=tutils;
 function toOptions(nval) {
@@ -26,15 +26,5 @@ function asOptions(val) {
     return toArray(val).map(toOptions);
 }
 export default function options(Clazz, key) {
-
-    extendPrototype(Clazz, 'componentWillMount', function options$componentWillMount() {
-        //this injects the options.
-        this.injected[key] = asOptions(this.props[key]);
-    });
-
-    extendPrototype(Clazz, 'componentWillReceiveProps', function options$willReceiveProps(newProps) {
-        if (this.props[key] !== newProps[key]) {
-            this.injected[key] = asOptions(newProps[key]);
-        }
-    });
+    Clazz::prop(key, asOptions);
 }

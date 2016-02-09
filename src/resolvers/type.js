@@ -1,22 +1,31 @@
 "use strict";
 
-import React, {Component} from 'react';
 import {PropTypes} from 'subschema';
-import {extendPrototype} from '../util';
-import defaults from 'lodash/object/defaults';
+import {prop} from '../util';
 import {injector} from '../PropTypes';
 
 const propTypes = {
     onChange: PropTypes.targetEvent,
+    onBlur: PropTypes.blurValidate,
     value: PropTypes.value,
     id: PropTypes.id,
-    name: PropTypes.name
+    name: PropTypes.name,
+    className: PropTypes.typeClass
 };
 
+//Expose for configurability
+export const settings = {
+    type: 'Text'
+};
 
-function resolve(val, context) {
-    const {type, ...rest} = typeof val === 'string' ? {type: val} : val;
+export function loadType(val, key, props, context) {
+    const {type, ...rest} = typeof val === 'string' ? {
+        ...settings,
+        type: val
+    } : val == null ? settings : {...settings, ...val};
+
     const Type = context.loader.loadType(type);
+
     return context.injector.inject(Type, propTypes, rest);
 }
 
@@ -25,13 +34,5 @@ export default function type(Clazz, key) {
     Clazz.contextTypes.loader = PropTypes.loader;
     Clazz.contextTypes.injector = injector;
 
-    extendPrototype(Clazz, 'componentWillMount', function type$willMount() {
-        this.injected[key] = resolve(this.props[key], this.context);
-    });
-
-    extendPrototype(Clazz, 'componentWillReceiveProps', function type$recieveProps(newProps, context) {
-        if (this.props[key] !== newProps[key]) {
-            this.injected[key] = resolve(newProps[key], context);
-        }
-    });
+    Clazz::prop(key, loadType);
 }

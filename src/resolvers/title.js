@@ -1,12 +1,11 @@
 "use strict";
 
-import React, {Component} from 'react';
-import {extendPrototype, resolveKey} from '../util';
+import {prop} from '../util';
 import {tutils } from 'subschema';
 
 const {titlelize} = tutils;
 
-function resolve(props, value) {
+function resolve(value, key, props) {
     if (value === false) {
         return '';
     }
@@ -18,14 +17,6 @@ function resolve(props, value) {
 
 export default function valueEvent(Clazz, key) {
 
-    extendPrototype(Clazz, 'componentWillMount', function valueEvent$willMount() {
-        this.injected[key] = resolve(this.props, this.props[key]);
-    });
-
-    extendPrototype(Clazz, 'componentWillReceiveProps', function valueEvent$receiveProps(newProps) {
-        if (this.props[key] !== newProps[key]) {
-            this.injected[key] = resolve(newProp, newProps[key]);
-        }
-    });
+    Clazz::prop(key, resolve);
 
 }

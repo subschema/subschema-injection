@@ -7,7 +7,7 @@ import resolvers from '../../src/resolvers';
 import injectorFactory from '../../src/injectorFactory';
 const injector = injectorFactory();
 
-describe('dataType', function () {
+describe('resolvers/dataType', function () {
     this.timeout(50000);
     const propTypes = {
         dataType: PropTypes.dataType

@@ -17,6 +17,7 @@ export default function dataType(Clazz, key, propTypeKeys) {
     //array of keys to allow for prop type renames.  This should not happen much, but we have dataType->type conversion.
     propTypeKeys.splice(propTypeKeys.indexOf(key), 1, 'type');
 
+
     extendPrototype(Clazz, 'componentWillMount', function dataType$willMount() {
         this.injected.type = this.props[key];
     });

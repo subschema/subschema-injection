@@ -4,9 +4,12 @@
   "description": "Subschema Injection System.",
   "main": "",
   "dependencies": {},
-  "repository": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/subschema/subschema-injection"
+  },
   "publishConfig": {
-    "registry": ""
+    "registry": "https://registry.npmjs.org"
   },
   "author": "",
   "license": "",
@@ -40,8 +43,6 @@
     "react-transform-catch-errors": "^1.0.1",
     "react-transform-hmr": "^1.0.1",
     "style-loader": "^0.13.0",
-    "subschema": "^0.54.0",
-    "subschema-test-support": "^1.0.4",
     "url-loader": "^0.5.7",
     "webpack": "^1.12.9",
     "webpack-dev-server": "^1.14.0"

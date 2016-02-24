@@ -1,6 +1,6 @@
 "use strict";
 import React, {Component} from 'react';
-import {keyIn,onlyKeys, uniqueKeys} from './util';
+import {keyIn, onlyKeys, uniqueKeys} from './util';
 
 export class BaseInjectComponent extends Component {
     state = {};
@@ -31,18 +31,15 @@ export default function injector(resolvers = []) {
                 resolve
             });
         },
-
-
-        inject(Clazz, extraPropTypes, extraProps, strictProps){
-            const {defaultProps, propTypes} = Clazz;
-            const propTypeKeys = uniqueKeys(propTypes, extraPropTypes, defaultProps);
-            const [...copyPropTypeKeys] = propTypeKeys;
+        createWrapperClass(Clazz, copyPropTypeKeys, strictProps){
             const render = strictProps !== false ? function render() {
+                const {children, ...rest} = this.props;
                 const props = onlyKeys(copyPropTypeKeys, this.injected, this.props);
                 return <Clazz {...props} >{this.props.children}</Clazz>
 
             } : function loosePropsRender() {
-                return <Clazz {...this.props} {...this.injected }>{this.props.children}</Clazz>
+                const {children, ...props} = this.props;
+                return children ? <Clazz {...props} {...this.injected }>{children}</Clazz> : <Clazz {...props} {...this.injected }/>
 
             };
             //BaseInjectComponent is just a marker class.
@@ -51,15 +48,31 @@ export default function injector(resolvers = []) {
                 static contextTypes = {};
                 render = render;
             }
-            if ('template' in Clazz){
-                InjectedClass.template = Clazz.template;
-            }
+            return InjectedClass
+        },
+        /**
+         * Injects properties based propType.
+         *
+         * @param Clazz - class to wrap.
+         * @param extraPropTypes - extra prop types if the component does not have the propType than it will use this propType, otherwise the
+         * the class'es default propType will be used.
+         * @param extraProps - If a component has a defaultProp than it will use that otherwise it will use this.
+         * @param strictProps - If false than it will pass all props on to component, otherwise it just passes defined props.
+         * @returns {*}
+         */
+
+        inject(Clazz, extraPropTypes, extraProps, strictProps){
+            const {defaultProps, propTypes} = Clazz;
+            const propTypeKeys = uniqueKeys(propTypes, defaultProps, extraPropTypes);
+            const [...copyPropTypeKeys] = propTypeKeys;
+
+            const InjectedClass = this.createWrapperClass(Clazz, copyPropTypeKeys, strictProps);
 
             return propTypeKeys.reduce((injectedClass, key)=> {
 
-                const propType = keyIn(key, extraPropTypes, propTypes);
+                const propType = keyIn(key, propTypes, extraPropTypes);
 
-                injectedClass.defaultProps[key] = keyIn(key, extraProps, defaultProps);
+                injectedClass.defaultProps[key] = keyIn(key, defaultProps, extraProps);
 
                 const nextClass = resolveProp(injectedClass, propType, key, copyPropTypeKeys, Clazz);
 

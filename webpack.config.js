@@ -25,11 +25,6 @@ var config = {
         alias: {
             'fbjs': join('node_modules/fbjs'),
             'react': join('node_modules/react'),
-            'Subschema': join('node_modules/subschema/src'),
-            'subschema': join('node_modules/subschema/src'),
-            'subschema-styles': join('node_modules/subschema/src/styles'),
-
-
             'subschema-injection': isTestDist ? join('dist/index.js') : join('src')
         }
     },
@@ -46,9 +41,7 @@ var config = {
                 include: [
                     join('src'),
                     join('public'),
-                    isKarma ? join('test') : join('no_such_dir'),
-                    join('node_modules/subschema-test-support/src'),
-                    join('node_modules/subschema/src')
+                    isKarma ? join('test') : join('no_such_dir')
                 ]
             },
             {test: /\.(png|jpe?g|mpe?g[34]?|gif)$/, loader: 'url-loader?limit=100000'},
@@ -72,7 +65,6 @@ var config = {
     },
     externals: (isPrepublish ? [{
         'react': true,
-        'Subschema': true
     }] : null)
 };
 

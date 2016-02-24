@@ -93,12 +93,17 @@ function listener(key, fn) {
         this._listeners[key] = this::fn(props[key], key, props, context);
     }
 
+    this::extend('componentDidMount', didMount);
+
     this::extend('componentWillMount', function listener$willMount() {
+        this.mounted = false;
         this::listener$listen(this.props, this.context);
     });
+
     this::extend('componentWillReceiveProps', listener$listen);
 
     this::unmount(function () {
+        this.mounted = false;
         this._listeners && this._listeners[key] && this._listeners[key]();
     });
 

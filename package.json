@@ -1,6 +1,6 @@
 {
   "name": "subschema-injection",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Subschema Injection System.",
   "main": "",
   "dependencies": {},

@@ -2,20 +2,28 @@
 import React, {Component} from 'react';
 import {keyIn, onlyKeys, uniqueKeys, listener, unmount, prop as property} from './util';
 
+
 export class BaseInjectComponent extends Component {
     state = {};
     injected = {};
 }
 
+function hasAnyKeys(obj) {
+    if (!obj) return false;
+    return Object.keys(obj).length > 0;
+}
 export default function injector(resolvers = []) {
 
-    function resolveProp(injectedClass, propType, key, propTypeKeys, Clazz) {
+    function resolveProp(propType) {
+        if (propType == null) {
+            return propType;
+        }
         const length = resolvers.length;
         for (let i = 0; i < length; i++) {
             const resolver = resolvers[i], pT = resolver.propType;
 
             if (pT === propType || pT.isRequired === propType) {
-                return resolver.resolve(injectedClass, key, propTypeKeys, Clazz);
+                return resolver;
             }
         }
         return null;
@@ -31,8 +39,8 @@ export default function injector(resolvers = []) {
                 resolve
             });
         },
-        listener,
         unmount,
+        listener,
         property,
 
         createWrapperClass(Clazz, extraPropTypes, extraProps, strictProps){
@@ -67,23 +75,36 @@ export default function injector(resolvers = []) {
          */
 
         inject(Clazz, extraPropTypes, extraProps, strictProps){
+            const hasExtra = hasAnyKeys(extraPropTypes) || hasAnyKeys(extraProps);
             const {defaultProps, propTypes} = Clazz;
             const propTypeKeys = uniqueKeys(propTypes, defaultProps, extraPropTypes);
             const [...copyPropTypeKeys] = propTypeKeys;
 
-            const InjectedClass = this.createWrapperClass(Clazz, copyPropTypeKeys, strictProps);
+            const start = hasExtra ? this.createWrapperClass(Clazz, copyPropTypeKeys, strictProps) : null;
 
-            return propTypeKeys.reduce((injectedClass, key)=> {
+            const injected = propTypeKeys.reduce((injectedClass, key)=> {
 
-                const propType = keyIn(key, propTypes, extraPropTypes);
+                const resolver = resolveProp(keyIn(key, propTypes, extraPropTypes));
+                //resolver is null, nothing to do just return.
+                if (resolver == null) {
+                    return injectedClass;
+                }
+                //injectedClass may be null if it didn't have any extras.  So we will create if it is.
+                injectedClass = injectedClass || this.createWrapperClass(Clazz, copyPropTypeKeys, strictProps);
 
+                //Add default props to this thing.
                 injectedClass.defaultProps[key] = keyIn(key, defaultProps, extraProps);
 
-                const nextClass = resolveProp(injectedClass, propType, key, copyPropTypeKeys, Clazz);
+                //Resolver could return a different class.
+                const nextClass = this::resolver.resolve(injectedClass, key, propTypeKeys, Clazz);
 
+                //If a different class was null, return the original class.
                 return (nextClass == null) ? injectedClass : nextClass;
 
-            }, InjectedClass);
+                return injectedClass;
+
+            }, start);
+            return injected || Clazz;
         }
     };
     return Injector;

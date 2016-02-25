@@ -1,6 +1,6 @@
 "use strict";
 import React, {Component} from 'react';
-import {keyIn, onlyKeys, uniqueKeys} from './util';
+import {keyIn, onlyKeys, uniqueKeys, listener, unmount, prop as property} from './util';
 
 export class BaseInjectComponent extends Component {
     state = {};
@@ -31,15 +31,20 @@ export default function injector(resolvers = []) {
                 resolve
             });
         },
-        createWrapperClass(Clazz, copyPropTypeKeys, strictProps){
+        listener,
+        unmount,
+        property,
+
+        createWrapperClass(Clazz, extraPropTypes, extraProps, strictProps){
+            const {defaultProps, propTypes} = Clazz;
+            const propTypeKeys = uniqueKeys(propTypes, extraPropTypes, defaultProps);
+            const [...copyPropTypeKeys] = propTypeKeys;
             const render = strictProps !== false ? function render() {
-                const {children, ...rest} = this.props;
                 const props = onlyKeys(copyPropTypeKeys, this.injected, this.props);
-                return <Clazz {...props} >{this.props.children}</Clazz>
+                return <Clazz {...props} {...this.injected } >{this.props.children}</Clazz>
 
             } : function loosePropsRender() {
-                const {children, ...props} = this.props;
-                return children ? <Clazz {...props} {...this.injected }>{children}</Clazz> : <Clazz {...props} {...this.injected }/>
+                return <Clazz {...this.props} {...this.injected }>{this.props.children}</Clazz>
 
             };
             //BaseInjectComponent is just a marker class.

@@ -82,6 +82,10 @@ function extend(name, fn) {
     const fn2 = this.prototype[name];
     this.prototype[name] = applyNice(fn, fn2);
 }
+function didMount() {
+    this.mounted = true;
+}
+
 function listener(key, fn) {
     function listener$listen(props, context) {
 

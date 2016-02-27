@@ -55,10 +55,12 @@ export default function injector(resolvers = []) {
                 return <Clazz {...this.props} {...this.injected }>{this.props.children}</Clazz>
 
             };
+            const {name} = Clazz;
             //BaseInjectComponent is just a marker class.
             class InjectedClass extends BaseInjectComponent {
                 static defaultProps = {};
                 static contextTypes = {};
+                static displayName = `${name}$Wrapper`;
                 render = render;
             }
             return InjectedClass
@@ -100,9 +102,6 @@ export default function injector(resolvers = []) {
 
                 //If a different class was null, return the original class.
                 return (nextClass == null) ? injectedClass : nextClass;
-
-                return injectedClass;
-
             }, start);
             return injected || Clazz;
         }

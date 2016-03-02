@@ -27,6 +27,10 @@ export default function injector(resolvers = new Map()) {
             throw new Error('resolvers must be iterable');
         }
     }
+    function resolveProp(propType) {
+        if (propType == null) return propType;
+        return resolvers.get(propType) || resolvers.get(propType.isRequired);
+    }
 
 
     const Injector = {
@@ -85,7 +89,7 @@ export default function injector(resolvers = new Map()) {
 
             const injected = propTypeKeys.reduce((injectedClass, key)=> {
 
-                const resolver = resolvers.get(keyIn(key, propTypes, extraPropTypes));
+                const resolver = resolveProp(keyIn(key, propTypes, extraPropTypes));
                 //resolver is null, nothing to do just return.
                 if (resolver == null) {
                     return injectedClass;

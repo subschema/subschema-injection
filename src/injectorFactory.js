@@ -97,7 +97,7 @@ export default function injector(resolvers = new Map()) {
                 injectedClass.defaultProps[key] = keyIn(key, defaultProps, extraProps);
 
                 //Resolver could return a different class.
-                const nextClass = injectedClass::resolver(injectedClass, key, propTypeKeys, Clazz);
+                const nextClass = Injector::resolver(injectedClass, key, propTypeKeys, Clazz);
 
                 //If a different class was null, return the original class.
                 return (nextClass == null) ? injectedClass : nextClass;

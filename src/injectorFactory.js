@@ -12,32 +12,29 @@ function hasAnyKeys(obj) {
     if (!obj) return false;
     return Object.keys(obj).length > 0;
 }
-export default function injector(resolvers = []) {
-
-    function resolveProp(propType) {
-        if (propType == null) {
-            return propType;
-        }
-        const length = resolvers.length;
-        for (let i = 0; i < length; i++) {
-            const resolver = resolvers[i], pT = resolver.propType;
-
-            if (pT === propType || pT.isRequired === propType) {
-                return resolver;
-            }
-        }
-        return null;
+function isIterable(obj) {
+    // checks for null and undefined
+    if (obj == null) {
+        return false
     }
+    return obj[Symbol.iterator] !== void(0)
+}
+export default function injector(resolvers = new Map()) {
+    if (!(resolvers instanceof Map )) {
+        if (isIterable(resolvers)) {
+            resolvers = new Map(resolvers);
+        } else {
+            throw new Error('resolvers must be iterable');
+        }
+    }
+
 
     const Injector = {
         resolver(propType, resolve){
             if (propType == null || resolve == null) {
                 throw new Error('must define both a propType and a resolver');
             }
-            resolvers.push({
-                propType,
-                resolve
-            });
+            resolvers.set(propType, resolve);
         },
         unmount,
         listener,
@@ -58,7 +55,7 @@ export default function injector(resolvers = []) {
             class InjectedClass extends BaseInjectComponent {
                 static defaultProps = {};
                 static contextTypes = {};
-                static displayName =  `${name}$Wrapper`;
+                static displayName = `${name}$Wrapper`;
                 render = render;
             }
             return InjectedClass
@@ -87,7 +84,7 @@ export default function injector(resolvers = []) {
 
             const injected = propTypeKeys.reduce((injectedClass, key)=> {
 
-                const resolver = resolveProp(keyIn(key, propTypes, extraPropTypes));
+                const resolver = resolvers.get(keyIn(key, propTypes, extraPropTypes));
                 //resolver is null, nothing to do just return.
                 if (resolver == null) {
                     return injectedClass;
@@ -99,7 +96,7 @@ export default function injector(resolvers = []) {
                 injectedClass.defaultProps[key] = keyIn(key, defaultProps, extraProps);
 
                 //Resolver could return a different class.
-                const nextClass = this::resolver.resolve(injectedClass, key, propTypeKeys, Clazz);
+                const nextClass = this::resolver(injectedClass, key, propTypeKeys, Clazz);
 
                 //If a different class was null, return the original class.
                 return (nextClass == null) ? injectedClass : nextClass;

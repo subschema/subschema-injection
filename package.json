@@ -2,7 +2,8 @@
   "name": "subschema-injection",
   "version": "1.0.7",
   "description": "Subschema Injection System.",
-  "main": "",
+  "webpack": "src/index",
+  "main":"dist/index",
   "dependencies": {},
   "repository": {
     "type": "git",

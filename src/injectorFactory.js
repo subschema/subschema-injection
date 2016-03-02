@@ -1,6 +1,6 @@
 "use strict";
 import React, {Component} from 'react';
-import {keyIn, onlyKeys, uniqueKeys, listener, unmount, prop as property} from './util';
+import {keyIn, onlyKeys, uniqueKeys, extendPrototype, listener, unmount, prop as property} from './util';
 
 
 export class BaseInjectComponent extends Component {
@@ -42,7 +42,7 @@ export default function injector(resolvers = []) {
         unmount,
         listener,
         property,
-
+        extendPrototype,
         createWrapperClass(Clazz, copyPropTypeKeys, strictProps){
             const {defaultProps, propTypes} = Clazz;
             const render = strictProps !== false ? function render() {

@@ -10,9 +10,9 @@ function applyNice(f1, f2) {
     };
 }
 
-function extendPrototype(Clazz, property, fn) {
-    Clazz.prototype[property] = applyNice(fn, Clazz.prototype[property]);
-    return Clazz;
+function extendPrototype(property, fn) {
+    this.prototype[property] = applyNice(fn, this.prototype[property]);
+    return this;
 }
 
 function execArg(v) {

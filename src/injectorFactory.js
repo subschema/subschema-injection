@@ -1,6 +1,6 @@
 "use strict";
 import React, {Component} from 'react';
-import {keyIn, onlyKeys, uniqueKeys, extendPrototype, listener, unmount, prop as property} from './util';
+import {keyIn, onlyKeys, uniqueKeys, resolveKey, extendPrototype, listener, unmount, prop as property} from './util';
 
 
 export class BaseInjectComponent extends Component {
@@ -40,6 +40,7 @@ export default function injector(resolvers = new Map()) {
         listener,
         property,
         extendPrototype,
+        resolveKey,
         createWrapperClass(Clazz, copyPropTypeKeys, strictProps){
             const {defaultProps, propTypes} = Clazz;
             const render = strictProps !== false ? function render() {
@@ -96,7 +97,7 @@ export default function injector(resolvers = new Map()) {
                 injectedClass.defaultProps[key] = keyIn(key, defaultProps, extraProps);
 
                 //Resolver could return a different class.
-                const nextClass = this::resolver(injectedClass, key, propTypeKeys, Clazz);
+                const nextClass = injectedClass::resolver(injectedClass, key, propTypeKeys, Clazz);
 
                 //If a different class was null, return the original class.
                 return (nextClass == null) ? injectedClass : nextClass;

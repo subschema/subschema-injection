@@ -43,10 +43,8 @@ export default function injector(resolvers = []) {
         listener,
         property,
 
-        createWrapperClass(Clazz, extraPropTypes, extraProps, strictProps){
+        createWrapperClass(Clazz, copyPropTypeKeys, strictProps){
             const {defaultProps, propTypes} = Clazz;
-            const propTypeKeys = uniqueKeys(propTypes, extraPropTypes, defaultProps);
-            const [...copyPropTypeKeys] = propTypeKeys;
             const render = strictProps !== false ? function render() {
                 const props = onlyKeys(copyPropTypeKeys, this.injected, this.props);
                 return <Clazz {...props} {...this.injected } >{this.props.children}</Clazz>
@@ -60,7 +58,7 @@ export default function injector(resolvers = []) {
             class InjectedClass extends BaseInjectComponent {
                 static defaultProps = {};
                 static contextTypes = {};
-                static displayName = `${name}$Wrapper`;
+                static displayName =  `${name}$Wrapper`;
                 render = render;
             }
             return InjectedClass
@@ -78,8 +76,11 @@ export default function injector(resolvers = []) {
 
         inject(Clazz, extraPropTypes, extraProps, strictProps){
             const hasExtra = hasAnyKeys(extraPropTypes) || hasAnyKeys(extraProps);
+
             const {defaultProps, propTypes} = Clazz;
+
             const propTypeKeys = uniqueKeys(propTypes, defaultProps, extraPropTypes);
+
             const [...copyPropTypeKeys] = propTypeKeys;
 
             const start = hasExtra ? this.createWrapperClass(Clazz, copyPropTypeKeys, strictProps) : null;

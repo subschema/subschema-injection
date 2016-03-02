@@ -29,7 +29,8 @@ export default function injector(resolvers = new Map()) {
     }
     function resolveProp(propType) {
         if (propType == null) return propType;
-        return resolvers.get(propType) || resolvers.get(propType.isRequired);
+        const resolved = resolvers.get(propType);
+        return resolved;
     }
 
 
@@ -37,6 +38,9 @@ export default function injector(resolvers = new Map()) {
         resolver(propType, resolve){
             if (propType == null || resolve == null) {
                 throw new Error('must define both a propType and a resolver');
+            }
+            if (propType.isRequired){
+                resolvers.set(propType.isRequired, resolve);
             }
             resolvers.set(propType, resolve);
         },

@@ -6,7 +6,7 @@ var AUTOPREFIXER_LOADER = 'autoprefixer-loader?{browsers:[' +
     '"Explorer >= 8", "iOS >= 6", "Opera >= 12", "Safari >= 6"]}';
 
 var lifecycle = process.env['npm_lifecycle_event'];
-var isPrepublish = lifecycle === 'prepublish';
+var isPrepublish = lifecycle === 'dist';
 var isKarma = process.env['NODE_ENV'] === 'test';
 var isTestDist = lifecycle === 'test-dist';
 
@@ -24,7 +24,6 @@ var config = {
         extensions: ['', '.jsx', '.js'],
         alias: {
             'fbjs': join('node_modules/fbjs'),
-            'react': join('node_modules/react'),
             'subschema-injection': isTestDist ? join('dist/index.js') : join('src')
         }
     },

@@ -6,6 +6,12 @@ import {keyIn, onlyKeys, uniqueKeys, resolveKey, extendPrototype, listener, unmo
 export class BaseInjectComponent extends Component {
     state = {};
     injected = {};
+
+    render() {
+        const {_copyPropTypeKeys, Clazz} = this.constructor;
+        const props = onlyKeys(_copyPropTypeKeys, this.injected, this.props);
+        return <Clazz {...props} {...this.injected }>{this.props.children}</Clazz>
+    }
 }
 
 function hasAnyKeys(obj) {
@@ -39,7 +45,7 @@ export default function injector(resolvers = new Map()) {
             if (propType == null || resolve == null) {
                 throw new Error('must define both a propType and a resolver');
             }
-            if (propType.isRequired){
+            if (propType.isRequired) {
                 resolvers.set(propType.isRequired, resolve);
             }
             resolvers.set(propType, resolve);
@@ -49,23 +55,16 @@ export default function injector(resolvers = new Map()) {
         property,
         extendPrototype,
         resolveKey,
-        createWrapperClass(Clazz, copyPropTypeKeys, strictProps){
-            const {defaultProps, propTypes} = Clazz;
-            const render = strictProps !== false ? function render() {
-                const props = onlyKeys(copyPropTypeKeys, this.injected, this.props);
-                return <Clazz {...props} {...this.injected } >{this.props.children}</Clazz>
+        createWrapperClass(Clazz, copyPropTypeKeys){
 
-            } : function loosePropsRender() {
-                return <Clazz {...this.props} {...this.injected }>{this.props.children}</Clazz>
-
-            };
             const {name, displayName} = Clazz;
             //BaseInjectComponent is just a marker class.
             class InjectedClass extends BaseInjectComponent {
                 static defaultProps = {};
                 static contextTypes = {};
                 static displayName = `${displayName || name}$Wrapper`;
-                render = render;
+                static Clazz = Clazz;
+                static _copyPropTypeKeys = copyPropTypeKeys;
             }
             return InjectedClass
         },
@@ -76,33 +75,32 @@ export default function injector(resolvers = new Map()) {
          * @param extraPropTypes - extra prop types if the component does not have the propType than it will use this propType, otherwise the
          * the class'es default propType will be used.
          * @param extraProps - If a component has a defaultProp than it will use that otherwise it will use this.
-         * @param strictProps - If false than it will pass all props on to component, otherwise it just passes defined props.
          * @returns {*}
          */
 
-        inject(Clazz, extraPropTypes, extraProps, strictProps){
+        inject(Clazz, extraPropTypes, extraProps){
             const hasExtra = hasAnyKeys(extraPropTypes) || hasAnyKeys(extraProps);
 
-            const {defaultProps, propTypes} = Clazz;
+            const {defaultProps, propTypes, injectedProps, injectedPropTypes} = Clazz;
 
-            const propTypeKeys = uniqueKeys(propTypes, defaultProps, extraPropTypes);
+            const propTypeKeys = uniqueKeys(injectedProps, injectedPropTypes, propTypes, defaultProps, extraPropTypes);
 
             const [...copyPropTypeKeys] = propTypeKeys;
 
-            const start = hasExtra ? this.createWrapperClass(Clazz, copyPropTypeKeys, strictProps) : null;
+            const start = hasExtra ? this.createWrapperClass(Clazz, copyPropTypeKeys) : null;
 
             const injected = propTypeKeys.reduce((injectedClass, key)=> {
 
-                const resolver = resolveProp(keyIn(key, propTypes, extraPropTypes));
+                const resolver = resolveProp(keyIn(key, injectedPropTypes, propTypes, extraPropTypes));
                 //resolver is null, nothing to do just return.
                 if (resolver == null) {
                     return injectedClass;
                 }
                 //injectedClass may be null if it didn't have any extras.  So we will create if it is.
-                injectedClass = injectedClass || this.createWrapperClass(Clazz, copyPropTypeKeys, strictProps);
+                injectedClass = injectedClass || this.createWrapperClass(Clazz, copyPropTypeKeys);
 
                 //Add default props to this thing.
-                injectedClass.defaultProps[key] = keyIn(key, defaultProps, extraProps);
+                injectedClass.defaultProps[key] = keyIn(key, injectedProps, defaultProps, extraProps);
 
                 //Resolver could return a different class.
                 const nextClass = Injector::resolver(injectedClass, key, propTypeKeys, Clazz);

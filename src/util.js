@@ -22,21 +22,17 @@ function execArg(v) {
 const push = Function.apply.bind(Array.prototype.push);
 
 function keyIn(key, ...args) {
-    for (let i = 0; i < args.length; i++) {
-        if (args[i] == null) continue;
-        if (key in args[i])
-            return args[i][key];
+    for (let arg of args) {
+        if (arg == null) continue;
+        if (key in arg)
+            return arg[key];
     }
     return;
 }
 function onlyKeys(keys, ...args) {
     const ret = {};
-    const length = keys.length;
-    const argLength = args.length;
-    KEYS: for (let i = 0; i < length; i++) {
-        const key = keys[i];
-        ARGS: for (let j = 0; j < argLength; j++) {
-            const arg = args[j];
+    KEYS: for (let key of keys) {
+        ARGS: for (let arg of args) {
             if (arg == null) continue ARGS;
             if (key in arg) {
                 ret[key] = arg[key];
@@ -49,35 +45,17 @@ function onlyKeys(keys, ...args) {
 }
 function uniqueKeys(...args) {
     const keys = [];
-    for (let i = 0, l = args.length; i < l; i++) {
-        if (args[i] == null) continue;
-        const k = Object.keys(args[i]), jl = k.length;
-        for (let j = 0; j < jl; j++) {
-            if (keys.indexOf(k[j]) === -1) {
-                keys.push(k[j]);
+    for (let arg of args) {
+        if (arg == null) continue;
+        for (let key of Object.keys(arg)) {
+            if (keys.indexOf(key) === -1) {
+                keys.push(key);
             }
         }
     }
     return keys;
 }
-function resolveKey(path, key) {
-    if (!key) {
-        return path;
-    }
-    if (key[0] != '.') {
-        return key;
-    }
-    var parts = path ? path.split('.') : [];
-    key = key.substring(1);
-    while (key[0] === '.') {
-        key = key.substring(1);
-        parts.pop();
-    }
-    if (key) {
-        parts.push(key);
-    }
-    return parts.length === 0 ? null : parts.join('.');
-}
+
 function extend(name, fn) {
     const fn2 = this.prototype[name];
     this.prototype[name] = applyNice(fn, fn2);
@@ -146,4 +124,4 @@ function unmount(fn) {
     this.prototype.componentWillUnmount = applyNice(fn, this.prototype.componentWillUnmount);
 }
 
-export  {applyNice,listener, extend, prop, unmount, extendStatic, extendPrototype, onlyKeys, keyIn, uniqueKeys, resolveKey, execArg, push, removeListeners, clearListeners}
+export  {applyNice,listener, extend, prop, unmount, extendStatic, extendPrototype, onlyKeys, keyIn, uniqueKeys, execArg, push, removeListeners, clearListeners}

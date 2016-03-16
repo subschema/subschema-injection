@@ -41,6 +41,8 @@ export default function injector(resolvers = new Map()) {
 
 
     const Injector = {
+
+        resolveProp,
         resolver(propType, resolve){
             if (propType == null || resolve == null) {
                 throw new Error('must define both a propType and a resolver');
@@ -91,7 +93,7 @@ export default function injector(resolvers = new Map()) {
 
             const injected = propTypeKeys.reduce((injectedClass, key)=> {
 
-                const resolver = resolveProp(keyIn(key, injectedPropTypes, propTypes, extraPropTypes));
+                const resolver = this.resolveProp(keyIn(key, injectedPropTypes, propTypes, extraPropTypes));
                 //resolver is null, nothing to do just return.
                 if (resolver == null) {
                     return injectedClass;

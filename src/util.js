@@ -31,13 +31,18 @@ function keyIn(key, ...args) {
 }
 function onlyKeys(keys, ...args) {
     const ret = {};
-    KEYS: for (let key of keys) {
-        ARGS: for (let arg of args) {
-            if (arg == null) continue ARGS;
+    let break_key = false;
+    for (let key of keys) {
+        for (let arg of args) {
+            if (arg == null) continue;
             if (key in arg) {
                 ret[key] = arg[key];
-                continue KEYS;
+                break_key = true;
+                break;
             }
+        }
+        if (break_key) {
+            break;
         }
     }
 
@@ -66,7 +71,7 @@ function didMount() {
 
 function listener(key, fn) {
     function listener$listen(props, context) {
-        if (!this.injected){
+        if (!this.injected) {
             this.injected = {};
         }
         if (!this._listeners) {
@@ -128,4 +133,19 @@ function unmount(fn) {
     this.prototype.componentWillUnmount = applyNice(fn, this.prototype.componentWillUnmount);
 }
 
-export  {applyNice,listener, extend, prop, unmount, extendStatic, extendPrototype, onlyKeys, keyIn, uniqueKeys, execArg, push, removeListeners, clearListeners}
+export  {
+    applyNice,
+    listener,
+    extend,
+    prop,
+    unmount,
+    extendStatic,
+    extendPrototype,
+    onlyKeys,
+    keyIn,
+    uniqueKeys,
+    execArg,
+    push,
+    removeListeners,
+    clearListeners
+}

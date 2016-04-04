@@ -1,6 +1,6 @@
 {
   "name": "subschema-injection",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Subschema Injection System.",
   "webpack": "src/index",
   "main": "dist/index",

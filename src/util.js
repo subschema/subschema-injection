@@ -66,7 +66,9 @@ function didMount() {
 
 function listener(key, fn) {
     function listener$listen(props, context) {
-
+        if (!this.injected){
+            this.injected = {};
+        }
         if (!this._listeners) {
             this._listeners = {};
         } else if (this._listeners[key]) {
@@ -94,10 +96,12 @@ function prop(key, fn) {
     //this is class scope.
     this::extend('componentWillMount', function util$prop$willMount() {
         //this is instance scope.
+        if (!this.injected) this.injected = {};
         this.injected[key] = this::fn(this.props[key], key, this.props, this.context);
     });
 
     this::extend('componentWillReceiveProps', function util$prop$receiveProps(props, context) {
+        if (!this.injected) this.injected = {};
         if (props[key] !== this.props[key]) {
             this.injected[key] = this::fn(props[key], key, props, context);
         }

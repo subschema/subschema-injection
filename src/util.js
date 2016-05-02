@@ -31,23 +31,18 @@ function keyIn(key, ...args) {
 }
 function onlyKeys(keys, ...args) {
     const ret = {};
-    let break_key = false;
     for (let key of keys) {
         for (let arg of args) {
             if (arg == null) continue;
             if (key in arg) {
                 ret[key] = arg[key];
-                break_key = true;
                 break;
             }
         }
-        if (break_key) {
-            break;
-        }
     }
-
     return ret;
 }
+
 function uniqueKeys(...args) {
     const keys = [];
     for (let arg of args) {

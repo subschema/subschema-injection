@@ -23,6 +23,7 @@
     "babel-preset-es2015-loose": "^7.0.0",
     "babel-preset-react": "^6.3.13",
     "babel-preset-stage-0": "^6.3.13",
+    "babel-register": "^6.7.2",
     "expect": "^1.13.4",
     "mocha": "^2.3.4",
     "react": "^15.0.2",
@@ -34,7 +35,7 @@
   },
   "scripts": {
     "dist": "babel src --out-dir dist",
-    "test": "mocha test/*-test.js",
+    "test": "mocha --compilers js:babel-register test/*-test.js",
     "prepublish": "npm run dist",
     "preversion": "npm run prepublish && npm run test"
   }

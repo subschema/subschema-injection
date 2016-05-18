@@ -22,7 +22,6 @@
     "babel-preset-es2015": "^6.3.13",
     "babel-preset-es2015-loose": "^7.0.0",
     "babel-preset-react": "^6.3.13",
-    "babel-preset-stage-0": "^6.3.13",
     "babel-register": "^6.7.2",
     "expect": "^1.13.4",
     "mocha": "^2.3.4",

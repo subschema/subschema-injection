@@ -33,7 +33,7 @@
     "react": "^15.0.2"
   },
   "scripts": {
-    "dist": "babel src --out-dir dist",
+    "dist": "babel -s src --out-dir dist",
     "test": "mocha --compilers js:babel-register test/*-test.js",
     "prepublish": "npm run dist",
     "preversion": "npm run prepublish && npm run test"

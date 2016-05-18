@@ -104,7 +104,7 @@ export default function injector(resolvers = new Map()) {
                 injectedClass.defaultProps[key] = keyIn(key, injectedProps, defaultProps, extraProps);
 
                 //Resolver could return a different class.
-                const nextClass = resolver.bind(Injector, injectedClass, key, propTypeKeys, Clazz);
+                const nextClass = resolver.call(Injector, injectedClass, key, propTypeKeys, Clazz);
 
                 //If a different class was null, return the original class.
                 return (nextClass == null) ? injectedClass : nextClass;

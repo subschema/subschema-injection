@@ -31,7 +31,7 @@
     "subschema-test-support": "^1.3.3"
   },
   "peerDependencies": {
-    "react": "^15.0.2"
+    "react": "*"
   },
   "scripts": {
     "dist": "babel -s true src --out-dir dist",
